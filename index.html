@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>JerryZhangsJesus</title>
+        <link href="https://fonts.googleapis.com/css?family=Amatic+SC" rel="stylesheet">
+        <meta name="description" content="An interactive getting started guide for Brackets.">
+        <style>
+            body,html{
+                margin: 0px;
+                padding: 0px;
+            }
+            #jesus{
+                height: 400px;
+                width: 255px;
+                object-fit: cover;
+                position: absolute;
+                height: 100vh;
+                width: 100vw;
+                filter: brightness(.5);
+            }
+            .mainContent{
+                position: absolute;
+                font-family: "Amatic SC";
+                z-index: 50;
+                font-size: 90px;
+                color: white;
+                padding: 50px;
+            }
+            #submit{
+                font-size: 80px;
+                border:2px solid white;
+                outline: none;
+                border-radius: 15px;
+                font-family: "Amatic SC";
+                background: none;
+                color:white;
+            }
+            h1{
+                font-size: 100%;
+                width: 100%;
+                border-bottom: 2px solid white;
+                text-align: center;
+            }
+            #chatbox{
+                margin: 15px;
+                border: 1px solid white;
+                border-radius: 5px;
+                background: none;
+                height: 400px;
+                max-height:400px;
+                overflow-y: scroll;
+                padding: 10px 25px;
+                font-size: 55%;
+            }
+            #chatbox p{
+                margin: 0;
+            }
+            #mainText{
+                max-height: 700px;
+                overflow-y: scroll;
+            }
+            #user{
+                font-size: 100px;
+                width: 500px;
+                font-family: "Amatic SC";
+                border: none;
+                outline: none;
+                border-bottom: 2px solid white;
+                background: none;
+                color:white;
+            }
+        </style>
+        <script type="text/javascript" src="jesus.js"></script>
+        <script>
+            const BIBLE_ID="de4e12af7f28f599-01";
+            const VERSES = [ 
+              `JER.29.11`,
+              `PSA.23`,
+              `1COR.4.4-8`,
+              `PHP.4.13`,
+              `JHN.3.16`,
+              `ROM.8.28`,
+              `ISA.41.10`,
+              `PSA.46.1`,
+              `GAL.5.22-23`,
+              `HEB.11.1`,
+              `2TI.1.7`,
+              `1COR.10.13`,
+              `PRO.22.6`,
+              `ISA.40.31`,
+              `JOS.1.9`,
+              `HEB.12.2`,
+              `MAT.11.28`,
+              `ROM.10.9-10`,
+              `PHP.2.3-4`,
+              `MAT.5.43-44`
+            ];
+            var books=[];
+            var map={};
+            window.onload = function(){
+                var verse=VERSES[Math.round(Math.random()*VERSES.length)];
+                xhr("https://api.scripture.api.bible/v1/bibles/"+BIBLE_ID+"/search?query="+verse,printVerse);
+                createMap();
+            }
+            
+            function sendMessage(){
+                var a=document.getElementById("user").value;
+                if(a.length>0){
+                    var response = getResponse(a);
+                    var chatbox=document.getElementById("chatbox");
+                    if(chatbox.innerText=="Jesus is listening...")
+                        chatbox.innerHTML="";
+                    chatbox.innerHTML=chatbox.innerHTML+"<span style='color:#9fb9bf'>You: </span>"+a+"<br>";
+                    document.getElementById("user").value="";
+                    window.setTimeout(function(){
+                        chatbox.innerHTML+="<span style='color:#de9396'>Jesus: </span>"+response+"<br>";    
+                    },Math.round(Math.random()*3000)+2000);
+                }
+            }
+            
+            function createMap(){
+                for(let s of dat){
+                    var words=s.split(" ");
+                    for(i=0;i<words.length-1;i++){
+                        var w=words[i];
+                        if(map[w]==null){
+                            map[w]=[];
+                        }
+                        map[w].push(words[i+1]);
+                    }
+                }
+            }
+            var b;
+            function getResponse(a){
+                var rand=Math.floor(Math.random()*dat.length);
+                var key=dat[rand].split(" ")[0];
+                var out=key+" ";
+                b=map[key];
+                for(i=0;i<20;i++){
+                    var outs=map[key];
+                    if(outs==null)
+                        break;
+                    var nextWord = outs[Math.floor(Math.random()*outs.length)];
+                    out+=nextWord;
+                    key=nextWord;
+                    if(i==19)
+                        out+=".";
+                    else
+                        out+=" ";
+                }
+                if(out.indexOf("..")==out.length-2)
+                    out=out.substr(0,out.length-1);
+                return out;
+            }
+            
+            function xhr(url,callback){
+                var xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+
+                xhr.addEventListener("readystatechange", function () {
+                  if (this.readyState === this.DONE) {
+                    callback(this.responseText);
+                  }
+                });
+
+                xhr.open("GET", url);
+                xhr.setRequestHeader(`api-key`, `44602063f22ea63536e057c40e50e588`);
+
+                xhr.send();
+            }
+            
+            function printBooks(txt){
+                var chapters=JSON.parse(txt).data;
+                var randBook = Math.floor(Math.random()*chapters.length);
+                var req="https://api.scripture.api.bible/v1/bibles/de4e12af7f28f599-01/chapters/"+chapters[randBook].id;
+                xhr(req,printChapter);
+            }
+            
+            function printVerse(txt){
+                var verse=JSON.parse(txt).data.passages[0].content;
+                console.log(JSON.parse(txt));
+                var display=document.getElementById("mainText");
+                display.innerHTML=verse;
+                display.innerHTML=display.innerHTML.replace(/\d/g,"");
+            }
+            
+            function printChapter(txt){
+                var html = JSON.parse(txt).data.content;
+                var display = document.getElementById("mainText");
+                display.innerHTML=html;
+                var children = display.childNodes;
+                console.log(children);
+                var keep = Math.round(Math.random()*children.length);
+                var rem=0;
+                var len=children.length;
+                for(i =0;i<len;i++){
+                    if(i!=keep)
+                        display.removeChild(children[rem]);
+                    else
+                        rem=1;
+                }
+            }
+            //https://source.unsplash.com/featured/?jesus
+            //https://images.pexels.com/photos/248797/pexels-photo-248797.jpeg?auto=compress&cs=tinysrgb&h=350
+            function getBookList(obj){
+                for(let o of obj.data)
+                    books.push(o.id);
+                var randBook = Math.floor(Math.random()*books.length);
+                xhr("https://api.scripture.api.bible/v1/bibles/"+BIBLE_ID+"/books/"+books[randBook]+"/chapters",printBooks);
+            }
+        </script>
+    </head>
+    <body>
+        <div class="mainContent">
+            <h1>Jerry Zhang's Jesus</h1>
+            <div id = "mainText"></div>
+            <div id="chatbox">
+                Jesus is listening...
+            </div>
+            <input id="user" type="text">
+            <button id="submit" onclick="sendMessage()">Talk To Jesus</button>
+        </div>
+        <img id="jesus" src="https://source.unsplash.com/featured/?jesus">
+    </body>
+</html>
